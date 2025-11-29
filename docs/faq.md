@@ -41,18 +41,27 @@ You have to start X-Plane separately from this tool.  It's also best to start X-
 
 ## Linux Issues
 
-### When using the binary release on Linux I get an 'SSL: CERTIFICATE_VERIFY_FAILED' error 
-You may need to specify the SSL_CERT_DIR your particular operating system
-uses.  For example:
-
-```
-SSL_CERT_DIR=/etc/ssl/certs ./autoortho_lin.bin
-```
-Note - Possibly fixed in 1.1.0 and newer See [Issue #11](https://github.com/ProgrammingDinosaur/autoortho4xplane/issues/11)
-
 ### FUSE errors ands trange behaviors on ARCH based systems.
-Arch and some other systems keep FUSE2 and FUSE3 seperate when it comes to their userspace binaries (the part AutoOrtho calls to mount and map folders). Other systems like Debian based platforms (e.g. Linux Mint, Ubuntu, Etc) just use FUSE3 binaries/libraries for both FUSE2 and FUSE3 support risking breaking compatability for select usecases. Luckely AutoOrtho is not one of these, but this leaves Arch support broken for now. A solution has been identified in a python FUSE support project that expands support to FUSE3 nativly.
-Until resolved - a Debian based release might be your best bet. The Linux version of X-Plane 12 itself is developed on LTS releases of ubuntu, so that or their Linux Mint counterparts might be a safe starting point if you must have ortho under linux.
+FUSE2 vs FUSE3 issues are now resolved for Arch based systems!
+
+You may still see a 'to many files open' error on some Linux systems. Here is how you troubleshoot it:
+
+Look up your current limits with ulimit -n
+
+If it says under 1024 that is your problem. You can fix this by modifying your limits for the terminal session you launch autoortho from...
+
+In that terminal (that is running as the same user account that will be running the auto ortho process) you will want to run the following commands:
+sudo sysctl -w fs.inotify.max_user_watches=100000
+[this will set the global fs variable to max user watches of 100K]
+ulimit -S -n 8192
+[This will set the current user limit to 8192 which is a safe high level that appears to be still a 'normal' value for some distributions]
+
+Next run "ulimit -n" again to validate the terminal session was updated to 8192.
+
+Finally start AutoOrtho: [example only]
+./autoortho_lin_1.4.2.bin
+
+Note: 99% of the time x-plane and auto orth are suposed to be running as your standard user account you logged into linux with (for SteamOS auto login systems this account is 'steam'). Rarely will it be running as root or with sudo/doas.
 
 ### On Linux this does not start/gives a FUSE error
 Make sure that your `/etc/fuse.conf` files is set to `user_allow_other`.  You may need to uncomment a line.
